@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 import sys
 
-__author__ = ''
+__author__ = 'keremff'
 
 
 try:
