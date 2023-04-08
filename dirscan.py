@@ -2,9 +2,10 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 import time
 import sys
+from fake_useragent import UserAgent
 
 __author__ = 'keremff'
-
+__version__ = '0.2.0'
 
 try:
     sys.argv[1]
@@ -14,9 +15,16 @@ except:
     exit()
 
 
-def check_url(url):
-    if requests.get(url).status_code != 200:
-        print(f'Target has scraping protection. (status code : {requests.get(url).status_code})')
+def request(url):
+    headers = {'User-Agent': UserAgent().firefox}
+    return requests.get(url, headers=headers)
+
+
+try:
+    if request(sys.argv[1]).status_code > 399:
+        exit('Target has scraping protection, exiting.')
+except:
+    exit("Url down or not valid, exiting.")
 
 
 def load_wordlist(url, wordlist, List):  # combine the url with wordlist into a list to loop through it
@@ -33,7 +41,7 @@ def try_urls(List):
     found_list = []  # This is used to make sure same url doesn't get printed twice
     found = 0
     with ThreadPoolExecutor(max_workers=120) as executor:
-        for response in executor.map(requests.get, List):
+        for response in executor.map(request, List):
             if check_status(response) == 200:
                 if response.url in found_list:
                     pass
@@ -46,7 +54,6 @@ def try_urls(List):
 
 def main():
     url = sys.argv[1]
-    check_url(url)
     wordlist = sys.argv[2]
     start = time.perf_counter()
     urls = []
